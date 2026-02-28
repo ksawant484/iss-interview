@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using TodoApi.Models;
+using TodoApi.DTOs.CommonDTOs;
+using TodoApi.DTOs.RequestDTOs;
 using TodoApi.Services;
 
 namespace TodoApi.Controllers
@@ -62,7 +63,7 @@ namespace TodoApi.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult UpdateTodo(int id, [FromBody] UpdateTodoRequest request)
+        public IActionResult UpdateTodo(int id, [FromBody] UpdateTodo request)
         {
             try
             {
@@ -107,23 +108,5 @@ namespace TodoApi.Controllers
                 return BadRequest(ex.Message);
             }
         }
-    }
-
-    public class GetTodoRequest
-    {
-        public int? Id { get; set; }
-    }
-
-    public class UpdateTodoRequest
-    {
-        public int Id { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public bool IsCompleted { get; set; }
-    }
-
-    public class DeleteTodoRequest
-    {
-        public int Id { get; set; }
     }
 }

@@ -1,5 +1,7 @@
 using Microsoft.Data.Sqlite;
-using TodoApi.Models;
+using TodoApi.DTOs.CommonDTOs;
+using TodoApi.DTOs.RequestDTOs;
+using TodoApi.Interfaces;
 
 namespace TodoApi.Services
 {
