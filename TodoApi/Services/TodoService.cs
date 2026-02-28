@@ -5,7 +5,7 @@ using TodoApi.Interfaces;
 
 namespace TodoApi.Services
 {
-    public class TodoService
+    public class TodoService : ITodoService
     {
         private string _connectionString = "Data Source=todos.db";
 
@@ -108,6 +108,80 @@ namespace TodoApi.Services
 
             var rowsAffected = command.ExecuteNonQuery();
             return rowsAffected > 0;
+        }
+
+        public Task<Todo> CreateTodoAsync(CreateTodo createTodo)
+        {
+            try
+            {
+                Todo todo = new()
+                {
+                    Title = createTodo.Title,
+                    Description = createTodo.Description,
+                    IsCompleted = createTodo.IsCompleted,
+                };
+
+                return Task.FromResult(CreateTodo(todo));
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public Task<Todo?> GetTodoByIdAsync(int id)
+        {
+            try
+            {
+                return Task.FromResult(GetTodoById(id));
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public Task<IEnumerable<Todo>> GetAllTodosAsync()
+        {
+            try
+            {
+                return Task.FromResult(GetAllTodos().AsEnumerable());
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public Task<Todo> UpdateTodoAsync(int id, UpdateTodo updateTodo)
+        {
+            try
+            {
+                Todo todo = new()
+                {
+                    Id = updateTodo.Id,
+                    Title = updateTodo.Title,
+                    Description = updateTodo.Description,
+                    IsCompleted = updateTodo.IsCompleted,
+                };
+                return Task.FromResult(UpdateTodo(id, todo));
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public Task<bool> DeleteTodoAsync(int id)
+        {
+            try
+            {
+                return Task.FromResult(DeleteTodo(id));
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
     }
 }
