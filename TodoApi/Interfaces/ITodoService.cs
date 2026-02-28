@@ -1,5 +1,5 @@
-﻿using TodoApi.DTOs.RequestDTOs;
-using TodoApi.DTOs.ResponseDTOs;
+﻿using TodoApi.DTOs.CommonDTOs;
+using TodoApi.DTOs.RequestDTOs;
 
 namespace TodoApi.Interfaces
 {

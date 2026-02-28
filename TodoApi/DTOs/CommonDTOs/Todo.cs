@@ -1,4 +1,4 @@
-namespace TodoApi.DTOs.ResponseDTOs
+namespace TodoApi.DTOs.CommonDTOs
 {
     public class Todo
     {
