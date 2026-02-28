@@ -1,4 +1,6 @@
 using Microsoft.Data.Sqlite;
+using TodoApi.Interfaces;
+using TodoApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +9,9 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Register the TodoService with the DI
+builder.Services.AddScoped<ITodoService, TodoService>();
 
 var app = builder.Build();
 
