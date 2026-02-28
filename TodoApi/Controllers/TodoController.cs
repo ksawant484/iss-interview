@@ -5,14 +5,14 @@ using TodoApi.Services;
 namespace TodoApi.Controllers
 {
     [ApiController]
-    [Route("api")]
+    [Route("api/[controller]")]
     public class TodoController : ControllerBase
     {
         public TodoController()
         {
         }
 
-        [HttpPost("createTodo")]
+        [HttpPost]
         public IActionResult CreateTodo([FromBody] Todo todo)
         {
             try
@@ -27,26 +27,18 @@ namespace TodoApi.Controllers
             }
         }
 
-        [HttpPost("getTodo")]
-        public IActionResult GetTodo([FromBody] GetTodoRequest request)
+        [HttpGet("{id}")]
+        public IActionResult GetTodo(int id)
         {
             try
             {
                 var todoService = new TodoService();
-                if (request.Id.HasValue)
+                var todo = todoService.GetTodoById(id);
+                if (todo == null)
                 {
-                    var todo = todoService.GetTodoById(request.Id.Value);
-                    if (todo == null)
-                    {
-                        return NotFound();
-                    }
-                    return Ok(todo);
+                    return NotFound();
                 }
-                else
-                {
-                    var todos = todoService.GetAllTodos();
-                    return Ok(todos);
-                }
+                return Ok(todo);
             }
             catch (Exception ex)
             {
@@ -54,8 +46,23 @@ namespace TodoApi.Controllers
             }
         }
 
-        [HttpPost("updateTodo")]
-        public IActionResult UpdateTodo([FromBody] UpdateTodoRequest request)
+        [HttpGet]
+        public IActionResult GetAllTodos()
+        {
+            try
+            {
+                var todoService = new TodoService();
+                var todos = todoService.GetAllTodos();
+                return Ok(todos);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPut("{id}")]
+        public IActionResult UpdateTodo(int id, [FromBody] UpdateTodoRequest request)
         {
             try
             {
@@ -82,13 +89,13 @@ namespace TodoApi.Controllers
             }
         }
 
-        [HttpPost("deleteTodo")]
-        public IActionResult DeleteTodo([FromBody] DeleteTodoRequest request)
+        [HttpDelete("{id}")]
+        public IActionResult DeleteTodo(int id)
         {
             try
             {
                 var todoService = new TodoService();
-                var result = todoService.DeleteTodo(request.Id);
+                var result = todoService.DeleteTodo(id);
                 if (result)
                 {
                     return Ok(new { message = "Todo deleted successfully" });

@@ -12,7 +12,7 @@ _Describe the issues you found in the original implementation. Consider aspects 
 - Architecture and design patterns
   
   - DTOs not used for request/response.  
-  - .  
+  - HTTP design conventions not followed, all CRUD endpoints configured for HTTP POST.  
 
 - Code quality and maintainability
 - Security vulnerabilities
