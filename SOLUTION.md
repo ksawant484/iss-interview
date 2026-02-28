@@ -12,7 +12,11 @@ _Describe the issues you found in the original implementation. Consider aspects 
 - Architecture and design patterns
   
   - DTOs not used for request/response.  
-  - HTTP design conventions not followed, all CRUD endpoints configured for HTTP POST.  
+  - HTTP API design conventions not followed, all CRUD endpoints configured for HTTP POST.
+  - Abstractions missing for the Service and Repository layers.
+  - Dependency Injection missing for Service layer classes, direct instantiation in controller without DI.  
+  - Tight coupling of Persistence logic within the Service layer.  
+  - No clear separation of concerns, business logic scattered across Data and Presentation layers.  
 
 - Code quality and maintainability
 - Security vulnerabilities
