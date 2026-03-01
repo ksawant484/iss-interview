@@ -33,7 +33,7 @@ builder.Services.AddScoped<IRepository<Todo>, TodoRepository>();
 var app = builder.Build();
 
 // Initialize the database
-await InitializeDatabaseAsync(app.Configuration);
+await app.InitializeDatabaseAsync(app.Configuration);
 
 // Configure the HTTP request pipeline.
 
@@ -54,23 +54,3 @@ app.MapControllers();
 
 app.Run();
 
-async Task InitializeDatabaseAsync(IConfiguration configuration)
-{
-    var connectionString = configuration.GetConnectionString("DefaultConnection") ?? "Data Source=todos.db";
-    using var connection = new SqliteConnection(connectionString);
-    await connection.OpenAsync();
-
-    var command = connection.CreateCommand();
-    command.CommandText = @"
-        CREATE TABLE IF NOT EXISTS Todos (
-            Id INTEGER PRIMARY KEY AUTOINCREMENT,
-            Title TEXT NOT NULL,
-            Description TEXT,
-            IsCompleted INTEGER NOT NULL DEFAULT 0,
-            CreatedAt TEXT NOT NULL
-        )
-    ";
-    await command.ExecuteNonQueryAsync();
-
-    Log.Information("Database initialized successfully");
-}
