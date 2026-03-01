@@ -11,7 +11,7 @@ namespace TodoApi.Interfaces
 
         Task<IEnumerable<Todo>> GetAllTodosAsync();
 
-        Task<Todo> UpdateTodoAsync(int id, UpdateTodo updateTodo);
+        Task<Todo?> UpdateTodoAsync(int id, UpdateTodo updateTodo);
 
         Task<bool> DeleteTodoAsync(int id);
 

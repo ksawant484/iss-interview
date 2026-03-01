@@ -2,115 +2,20 @@ using Microsoft.Data.Sqlite;
 using TodoApi.DTOs.CommonDTOs;
 using TodoApi.DTOs.RequestDTOs;
 using TodoApi.Interfaces;
+using TodoApi.Repository;
 
 namespace TodoApi.Services
 {
     public class TodoService : ITodoService
     {
-        private string _connectionString = "Data Source=todos.db";
+        private readonly IRepository<Todo> _todoRepository;
 
-        public TodoService()
+        public TodoService(IRepository<Todo> todoRepository)
         {
+            _todoRepository = todoRepository;
         }
 
-        public Todo CreateTodo(Todo todo)
-        {
-            using var connection = new SqliteConnection(_connectionString);
-            connection.Open();
-
-            var command = connection.CreateCommand();
-            command.CommandText = $@"
-                INSERT INTO Todos (Title, Description, IsCompleted, CreatedAt)
-                VALUES ('{todo.Title}', '{todo.Description}', {(todo.IsCompleted ? 1 : 0)}, '{DateTime.UtcNow.ToString("o")}');
-                SELECT last_insert_rowid();
-            ";
-
-            var id = Convert.ToInt32(command.ExecuteScalar());
-            todo.Id = id;
-            todo.CreatedAt = DateTime.UtcNow;
-            return todo;
-        }
-
-        public List<Todo> GetAllTodos()
-        {
-            var todos = new List<Todo>();
-            using var connection = new SqliteConnection(_connectionString);
-            connection.Open();
-
-            var command = connection.CreateCommand();
-            command.CommandText = "SELECT * FROM Todos";
-
-            using var reader = command.ExecuteReader();
-            while (reader.Read())
-            {
-                todos.Add(new Todo
-                {
-                    Id = reader.GetInt32(0),
-                    Title = reader.GetString(1),
-                    Description = reader.GetString(2),
-                    IsCompleted = reader.GetInt32(3) == 1,
-                    CreatedAt = DateTime.Parse(reader.GetString(4))
-                });
-            }
-
-            return todos;
-        }
-
-        public Todo GetTodoById(int id)
-        {
-            using var connection = new SqliteConnection(_connectionString);
-            connection.Open();
-
-            var command = connection.CreateCommand();
-            command.CommandText = $"SELECT * FROM Todos WHERE Id = {id}";
-
-            using var reader = command.ExecuteReader();
-            if (reader.Read())
-            {
-                return new Todo
-                {
-                    Id = reader.GetInt32(0),
-                    Title = reader.GetString(1),
-                    Description = reader.GetString(2),
-                    IsCompleted = reader.GetInt32(3) == 1,
-                    CreatedAt = DateTime.Parse(reader.GetString(4))
-                };
-            }
-
-            return null;
-        }
-
-        public Todo UpdateTodo(int id, Todo todo)
-        {
-            using var connection = new SqliteConnection(_connectionString);
-            connection.Open();
-
-            var command = connection.CreateCommand();
-            command.CommandText = $@"
-                UPDATE Todos
-                SET Title = '{todo.Title}', Description = '{todo.Description}', IsCompleted = {(todo.IsCompleted ? 1 : 0)}
-                WHERE Id = {id}
-            ";
-
-            var rowsAffected = command.ExecuteNonQuery();
-
-            todo.Id = id;
-            return todo;
-        }
-
-        public bool DeleteTodo(int id)
-        {
-            using var connection = new SqliteConnection(_connectionString);
-            connection.Open();
-
-            var command = connection.CreateCommand();
-            command.CommandText = $"DELETE FROM Todos WHERE Id = {id}";
-
-            var rowsAffected = command.ExecuteNonQuery();
-            return rowsAffected > 0;
-        }
-
-        public Task<Todo> CreateTodoAsync(CreateTodo createTodo)
+        public async Task<Todo> CreateTodoAsync(CreateTodo createTodo)
         {
             try
             {
@@ -119,9 +24,13 @@ namespace TodoApi.Services
                     Title = createTodo.Title,
                     Description = createTodo.Description,
                     IsCompleted = createTodo.IsCompleted,
+                    CreatedAt = DateTime.UtcNow
                 };
 
-                return Task.FromResult(CreateTodo(todo));
+                Todo createdTodo = await _todoRepository.AddAsync(todo);
+
+                return createdTodo;
+
             }
             catch (Exception)
             {
@@ -129,11 +38,12 @@ namespace TodoApi.Services
             }
         }
 
-        public Task<Todo?> GetTodoByIdAsync(int id)
+        public async Task<Todo?> GetTodoByIdAsync(int id)
         {
             try
             {
-                return Task.FromResult(GetTodoById(id));
+                var todo = await _todoRepository.GetByIdAsync(id);
+                return todo;
             }
             catch (Exception)
             {
@@ -141,11 +51,12 @@ namespace TodoApi.Services
             }
         }
 
-        public Task<IEnumerable<Todo>> GetAllTodosAsync()
+        public async Task<IEnumerable<Todo>> GetAllTodosAsync()
         {
             try
             {
-                return Task.FromResult(GetAllTodos().AsEnumerable());
+                var todos = await _todoRepository.GetAllAsync();
+                return todos;
             }
             catch (Exception)
             {
@@ -153,18 +64,24 @@ namespace TodoApi.Services
             }
         }
 
-        public Task<Todo> UpdateTodoAsync(int id, UpdateTodo updateTodo)
+        public async Task<Todo?> UpdateTodoAsync(int id, UpdateTodo updateTodo)
         {
             try
             {
-                Todo todo = new()
+                var existingTodo = await _todoRepository.GetByIdAsync(id);
+
+                if (existingTodo == null)
                 {
-                    Id = updateTodo.Id,
-                    Title = updateTodo.Title,
-                    Description = updateTodo.Description,
-                    IsCompleted = updateTodo.IsCompleted,
-                };
-                return Task.FromResult(UpdateTodo(id, todo));
+                    return null;
+                }
+
+                existingTodo.Title = updateTodo.Title;
+                existingTodo.Description = updateTodo.Description;
+                existingTodo.IsCompleted = existingTodo.IsCompleted;
+
+                var updatedTodo = await _todoRepository.UpdateAsync(existingTodo);
+
+                return updatedTodo;
             }
             catch (Exception)
             {
@@ -172,11 +89,20 @@ namespace TodoApi.Services
             }
         }
 
-        public Task<bool> DeleteTodoAsync(int id)
+        public async Task<bool> DeleteTodoAsync(int id)
         {
             try
             {
-                return Task.FromResult(DeleteTodo(id));
+                bool exists = await _todoRepository.ExistsAsync(id);
+                
+                if (!exists)
+                {
+                    return false;
+                }
+
+                bool result = await _todoRepository.DeleteAsync(id);
+
+                return result;
             }
             catch (Exception)
             {

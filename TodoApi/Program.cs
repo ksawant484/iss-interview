@@ -1,5 +1,7 @@
 using Microsoft.Data.Sqlite;
+using TodoApi.DTOs.CommonDTOs;
 using TodoApi.Interfaces;
+using TodoApi.Repository;
 using TodoApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +14,7 @@ builder.Services.AddSwaggerGen();
 
 // Register the TodoService with the DI
 builder.Services.AddScoped<ITodoService, TodoService>();
+builder.Services.AddScoped<IRepository<Todo>, TodoRepository>();
 
 var app = builder.Build();
 
