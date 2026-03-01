@@ -32,12 +32,14 @@ builder.Services.AddScoped<IRepository<Todo>, TodoRepository>();
 
 var app = builder.Build();
 
-// Use global exception handling middleware in the HTTP request pipeline
-app.UseMiddleware<GlobalExceptionMiddleware>();
-
-InitializeDatabase();
+// Initialize the database
+await InitializeDatabaseAsync(app.Configuration);
 
 // Configure the HTTP request pipeline.
+
+// Use global exception handling middleware
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -52,11 +54,11 @@ app.MapControllers();
 
 app.Run();
 
-void InitializeDatabase()
+async Task InitializeDatabaseAsync(IConfiguration configuration)
 {
-    var connectionString = "Data Source=todos.db";
+    var connectionString = configuration.GetConnectionString("DefaultConnection") ?? "Data Source=todos.db";
     using var connection = new SqliteConnection(connectionString);
-    connection.Open();
+    await connection.OpenAsync();
 
     var command = connection.CreateCommand();
     command.CommandText = @"
@@ -68,7 +70,7 @@ void InitializeDatabase()
             CreatedAt TEXT NOT NULL
         )
     ";
-    command.ExecuteNonQuery();
+    await command.ExecuteNonQueryAsync();
 
-    Console.WriteLine("Database initialized successfully");
+    Log.Information("Database initialized successfully");
 }
