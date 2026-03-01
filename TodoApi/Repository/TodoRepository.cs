@@ -16,154 +16,111 @@ namespace TodoApi.Repository
 
         public async Task<Todo> AddAsync(Todo resource)
         {
-            try
-            {
-                using var connection = new SqliteConnection(_dbConnString);
-                await connection.OpenAsync();
+            using var connection = new SqliteConnection(_dbConnString);
+            await connection.OpenAsync();
 
-                using var command = connection.CreateCommand();
-                command.CommandText = $@"
+            using var command = connection.CreateCommand();
+            command.CommandText = $@"
                     INSERT INTO Todos (Title, Description, IsCompleted, CreatedAt)
                     VALUES (@title, @description, @isCompleted, @createdAt);
                     SELECT last_insert_rowid();
                 ";
 
-                command.Parameters.AddWithValue("@title", resource.Title);
-                command.Parameters.AddWithValue("@description", resource.Description ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@isCompleted", resource.IsCompleted ? 1 : 0);
-                command.Parameters.AddWithValue("@createdAt", resource.CreatedAt.ToString("o"));
+            command.Parameters.AddWithValue("@title", resource.Title);
+            command.Parameters.AddWithValue("@description", resource.Description ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("@isCompleted", resource.IsCompleted ? 1 : 0);
+            command.Parameters.AddWithValue("@createdAt", resource.CreatedAt.ToString("o"));
 
-                var id = Convert.ToInt32(await command.ExecuteScalarAsync());
-                resource.Id = id;
-                return resource;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            var id = Convert.ToInt32(await command.ExecuteScalarAsync());
+            resource.Id = id;
+            return resource;
         }
 
         public async Task<bool> DeleteAsync(int id)
         {
-            try
-            {
-                using var connection = new SqliteConnection(_dbConnString);
-                await connection.OpenAsync();
+            using var connection = new SqliteConnection(_dbConnString);
+            await connection.OpenAsync();
 
-                var command = connection.CreateCommand();
-                command.CommandText = $"DELETE FROM Todos WHERE Id = @id";
+            var command = connection.CreateCommand();
+            command.CommandText = $"DELETE FROM Todos WHERE Id = @id";
 
-                command.Parameters.AddWithValue("@id", id);
+            command.Parameters.AddWithValue("@id", id);
 
-                var rowsAffected = await command.ExecuteNonQueryAsync();
-                return rowsAffected > 0;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            var rowsAffected = await command.ExecuteNonQueryAsync();
+            return rowsAffected > 0;
         }
 
         public async Task<bool> ExistsAsync(int id)
         {
-            try
-            {
-                using var connection = new SqliteConnection(_dbConnString);
-                await connection.OpenAsync();
+            using var connection = new SqliteConnection(_dbConnString);
+            await connection.OpenAsync();
 
-                using var command = connection.CreateCommand();
-                command.CommandText = "SELECT COUNT(1) FROM Todos WHERE Id = @id";
-                command.Parameters.AddWithValue("@id", id);
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT COUNT(1) FROM Todos WHERE Id = @id";
+            command.Parameters.AddWithValue("@id", id);
 
-                var count = Convert.ToInt32(await command.ExecuteScalarAsync());
-                return count > 0;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            var count = Convert.ToInt32(await command.ExecuteScalarAsync());
+            return count > 0;
         }
 
         public async Task<IEnumerable<Todo>> GetAllAsync()
         {
-            try
+            var todos = new List<Todo>();
+            using var connection = new SqliteConnection(_dbConnString);
+            await connection.OpenAsync();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT Id, Title, Description, IsCompleted, CreatedAt FROM Todos ORDER BY CreatedAt DESC";
+
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
             {
-                var todos = new List<Todo>();
-                using var connection = new SqliteConnection(_dbConnString);
-                await connection.OpenAsync();
-
-                using var command = connection.CreateCommand();
-                command.CommandText = "SELECT Id, Title, Description, IsCompleted, CreatedAt FROM Todos ORDER BY CreatedAt DESC";
-
-                using var reader = await command.ExecuteReaderAsync();
-                while (await reader.ReadAsync())
-                {
-                    todos.Add(MapTodoFromReader(reader));
-                }
-
-                return todos;
-
+                todos.Add(MapTodoFromReader(reader));
             }
-            catch (Exception)
-            {
-                throw;
-            }
+
+            return todos;
         }
 
         public async Task<Todo?> GetByIdAsync(int id)
         {
-            try
+            using var connection = new SqliteConnection(_dbConnString);
+            await connection.OpenAsync();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = "SELECT Id, Title, Description, IsCompleted, CreatedAt FROM Todos WHERE Id = @id";
+            command.Parameters.AddWithValue("@id", id);
+
+            using var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
             {
-                using var connection = new SqliteConnection(_dbConnString);
-                await connection.OpenAsync();
-
-                using var command = connection.CreateCommand();
-                command.CommandText = "SELECT Id, Title, Description, IsCompleted, CreatedAt FROM Todos WHERE Id = @id";
-                command.Parameters.AddWithValue("@id", id);
-
-                using var reader = await command.ExecuteReaderAsync();
-                if (await reader.ReadAsync())
-                {
-                    return MapTodoFromReader(reader);
-                }
-
-                return null;
+                return MapTodoFromReader(reader);
             }
-            catch (Exception)
-            {
-                throw;
-            }
+
+            return null;
         }
 
         public async Task<Todo> UpdateAsync(Todo resource)
         {
-            try
-            {
-                using var connection = new SqliteConnection(_dbConnString);
-                await connection.OpenAsync();
+            using var connection = new SqliteConnection(_dbConnString);
+            await connection.OpenAsync();
 
-                using var command = connection.CreateCommand();
-                command.CommandText = @"
+            using var command = connection.CreateCommand();
+            command.CommandText = @"
                     UPDATE Todos
                     SET Title = @title, Description = @description, IsCompleted = @isCompleted
                     WHERE Id = @id
                 ";
 
-                command.Parameters.AddWithValue("@title", resource.Title);
-                command.Parameters.AddWithValue("@description", resource.Description ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@isCompleted", resource.IsCompleted ? 1 : 0);
-                command.Parameters.AddWithValue("@id", resource.Id);
+            command.Parameters.AddWithValue("@title", resource.Title);
+            command.Parameters.AddWithValue("@description", resource.Description ?? (object)DBNull.Value);
+            command.Parameters.AddWithValue("@isCompleted", resource.IsCompleted ? 1 : 0);
+            command.Parameters.AddWithValue("@id", resource.Id);
 
-                await command.ExecuteNonQueryAsync();
-                return resource;
-            }
-            catch (Exception)
-            {
-                throw;
-            }
+            await command.ExecuteNonQueryAsync();
+            return resource;
         }
 
-        private static Todo MapTodoFromReader(SqliteDataReader reader)
+        private Todo MapTodoFromReader(SqliteDataReader reader)
         {
             var descriptionOrdinal = reader.GetOrdinal("Description");
             return new Todo

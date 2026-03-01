@@ -10,11 +10,13 @@ namespace TodoApi.Middlewares.ExceptionMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IHostEnvironment _env;
+        private readonly ILogger<GlobalExceptionMiddleware> _logger;
 
-        public GlobalExceptionMiddleware(RequestDelegate next, IHostEnvironment env)
+        public GlobalExceptionMiddleware(RequestDelegate next, IHostEnvironment env, ILogger<GlobalExceptionMiddleware> logger)
         {
             _next = next;
             _env = env;
+            _logger = logger;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -25,6 +27,7 @@ namespace TodoApi.Middlewares.ExceptionMiddleware
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Exception occurred");
                 await HandleExceptionAsync(context, ex);
             }
         }
@@ -47,7 +50,7 @@ namespace TodoApi.Middlewares.ExceptionMiddleware
             };
 
             // Only show details in Development
-            if (_env.IsDevelopment())
+             if (_env.IsDevelopment())
             {
                 problem.Message = exception.Message;
             }

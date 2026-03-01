@@ -1,4 +1,5 @@
 using Microsoft.Data.Sqlite;
+using Serilog;
 using TodoApi.DTOs.CommonDTOs;
 using TodoApi.Interfaces;
 using TodoApi.Middlewares.ExceptionMiddleware;
@@ -6,6 +7,18 @@ using TodoApi.Repository;
 using TodoApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Serilog for logging
+string logPath = builder.Configuration["LogFilePath"] ?? "Logs/todoapi-.txt";
+
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File(logPath, rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -19,7 +32,7 @@ builder.Services.AddScoped<IRepository<Todo>, TodoRepository>();
 
 var app = builder.Build();
 
-// Use global exception handling middleware
+// Use global exception handling middleware in the HTTP request pipeline
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
 InitializeDatabase();

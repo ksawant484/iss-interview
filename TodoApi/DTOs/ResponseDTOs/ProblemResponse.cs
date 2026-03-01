@@ -2,7 +2,12 @@
 {
     public class ProblemResponse : SimpleResponse
     {
-        public new bool Success = false;
+        public ProblemResponse()
+        {
+            Message = "Something went wrong. Please check logs.";
+            Success = false;
+        }
+
         public string Title { get; set; }
         public string Instance { get; set; }
         public string Method { get; set; }
