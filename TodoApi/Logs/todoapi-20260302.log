@@ -1,0 +1,30 @@
+2026-03-02 00:50:55.006 +05:30 [INF] Database initialized successfully
+2026-03-02 00:51:33.931 +05:30 [INF] API invoked to fetch all todos
+2026-03-02 00:51:33.939 +05:30 [INF] Fetching all todos
+2026-03-02 00:52:33.772 +05:30 [INF] API invoked to create a new todo having title:Todo 1
+2026-03-02 00:52:33.776 +05:30 [INF] Creating new todo with title:Todo 1
+2026-03-02 00:52:33.806 +05:30 [INF] New todo created successfully with id:1
+2026-03-02 00:52:43.103 +05:30 [INF] API invoked to create a new todo having title:Todo 2
+2026-03-02 00:52:43.105 +05:30 [INF] Creating new todo with title:Todo 2
+2026-03-02 00:52:43.114 +05:30 [INF] New todo created successfully with id:2
+2026-03-02 00:52:48.442 +05:30 [INF] API invoked to create a new todo having title:Todo 3
+2026-03-02 00:52:48.444 +05:30 [INF] Creating new todo with title:Todo 3
+2026-03-02 00:52:48.457 +05:30 [INF] New todo created successfully with id:3
+2026-03-02 00:52:53.846 +05:30 [INF] API invoked to create a new todo having title:Todo 4
+2026-03-02 00:52:53.847 +05:30 [INF] Creating new todo with title:Todo 4
+2026-03-02 00:52:53.857 +05:30 [INF] New todo created successfully with id:4
+2026-03-02 00:52:59.225 +05:30 [INF] API invoked to create a new todo having title:Todo 5
+2026-03-02 00:52:59.226 +05:30 [INF] Creating new todo with title:Todo 5
+2026-03-02 00:52:59.284 +05:30 [INF] New todo created successfully with id:5
+2026-03-02 00:53:12.631 +05:30 [INF] API invoked to fetch all todos
+2026-03-02 00:53:12.633 +05:30 [INF] Fetching all todos
+2026-03-02 00:53:26.517 +05:30 [INF] API invoked to fetch the todo having id:2
+2026-03-02 00:53:26.521 +05:30 [INF] Fetching todo with id:2
+2026-03-02 00:54:00.884 +05:30 [INF] API invoked to update the todo having id:2
+2026-03-02 00:54:00.888 +05:30 [INF] Updating the todo having id:2
+2026-03-02 00:54:00.945 +05:30 [INF] Updated the todo successfully having id:2
+2026-03-02 00:54:07.637 +05:30 [INF] API invoked to fetch the todo having id:2
+2026-03-02 00:54:07.639 +05:30 [INF] Fetching todo with id:2
+2026-03-02 00:54:17.526 +05:30 [INF] API invoked to delete the todo having id:5
+2026-03-02 00:54:17.531 +05:30 [INF] Deleting the todo having id:5
+2026-03-02 00:54:17.590 +05:30 [INF] Deleted the todo successfully having id:5
