@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using TodoApi.DTOs.CommonDTOs;
 using TodoApi.DTOs.RequestDTOs;
+using TodoApi.DTOs.ResponseDTOs;
 using TodoApi.Interfaces;
 
 namespace TodoApi.Controllers
@@ -17,6 +19,7 @@ namespace TodoApi.Controllers
         }
 
         [HttpPost]
+        [ProducesResponseType(typeof(Todo), StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateTodoAsync([FromBody] CreateTodo todo)
         {
             try
@@ -31,6 +34,8 @@ namespace TodoApi.Controllers
         }
 
         [HttpGet("{id}")]
+        [ProducesResponseType(typeof(Todo), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(SimpleResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetTodoAsync(int id)
         {
             try
@@ -38,7 +43,12 @@ namespace TodoApi.Controllers
                 var todo = await _todoService.GetTodoByIdAsync(id);
                 if (todo == null)
                 {
-                    return NotFound();
+                    return NotFound(new SimpleResponse()
+                    {
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Message = $"Todo with id:{id} not found.",
+                        Success = false
+                    });
                 }
                 return Ok(todo);
             }
@@ -49,6 +59,7 @@ namespace TodoApi.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<Todo>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllTodosAsync()
         {
             try
@@ -63,6 +74,8 @@ namespace TodoApi.Controllers
         }
 
         [HttpPut("{id}")]
+        [ProducesResponseType(typeof(Todo), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(SimpleResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateTodoAsync(int id, [FromBody] UpdateTodo request)
         {
             try
@@ -70,7 +83,12 @@ namespace TodoApi.Controllers
                 var existingTodo = await _todoService.GetTodoByIdAsync(request.Id);
                 if (existingTodo == null)
                 {
-                    return NotFound();
+                    return NotFound(new SimpleResponse()
+                    {
+                        StatusCode = StatusCodes.Status404NotFound,
+                        Message = $"Todo with id:{id} not found.",
+                        Success = false
+                    });
                 }
 
                 var result = _todoService.UpdateTodoAsync(request.Id, request);
@@ -83,6 +101,8 @@ namespace TodoApi.Controllers
         }
 
         [HttpDelete("{id}")]
+        [ProducesResponseType(typeof(SimpleResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(SimpleResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteTodoAsync(int id)
         {
             try
@@ -90,9 +110,19 @@ namespace TodoApi.Controllers
                 var result = await _todoService.DeleteTodoAsync(id);
                 if (result)
                 {
-                    return Ok(new { message = "Todo deleted successfully" });
+                    return Ok(new SimpleResponse()
+                    {
+                        StatusCode = StatusCodes.Status200OK,
+                        Message = "Todo deleted successfully",
+                        Success = true
+                    });
                 }
-                return NotFound();
+                return NotFound(new SimpleResponse()
+                {
+                    StatusCode = StatusCodes.Status404NotFound,
+                    Message = $"Todo with id:{id} not found.",
+                    Success = false
+                });
             }
             catch (Exception ex)
             {
