@@ -1,6 +1,7 @@
 using Microsoft.Data.Sqlite;
 using TodoApi.DTOs.CommonDTOs;
 using TodoApi.Interfaces;
+using TodoApi.Middlewares.ExceptionMiddleware;
 using TodoApi.Repository;
 using TodoApi.Services;
 
@@ -17,6 +18,9 @@ builder.Services.AddScoped<ITodoService, TodoService>();
 builder.Services.AddScoped<IRepository<Todo>, TodoRepository>();
 
 var app = builder.Build();
+
+// Use global exception handling middleware
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 InitializeDatabase();
 

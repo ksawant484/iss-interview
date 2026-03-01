@@ -22,112 +22,62 @@ namespace TodoApi.Controllers
         [ProducesResponseType(typeof(Todo), StatusCodes.Status200OK)]
         public async Task<IActionResult> CreateTodoAsync([FromBody] CreateTodo todo)
         {
-            try
-            {
-                var result = await _todoService.CreateTodoAsync(todo);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var result = await _todoService.CreateTodoAsync(todo);
+            return Ok(result);
         }
 
         [HttpGet("{id}")]
         [ProducesResponseType(typeof(Todo), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(SimpleResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetTodoAsync(int id)
         {
-            try
-            {
-                var todo = await _todoService.GetTodoByIdAsync(id);
-                if (todo == null)
-                {
-                    return NotFound(new SimpleResponse()
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = $"Todo with id:{id} not found.",
-                        Success = false
-                    });
-                }
-                return Ok(todo);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var todo = await _todoService.GetTodoByIdAsync(id);
+            return todo == null ?
+                throw new KeyNotFoundException($"Todo with id:{id} not found.")
+                : Ok(todo);
         }
 
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<Todo>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllTodosAsync()
         {
-            try
-            {
-                var todos = await _todoService.GetAllTodosAsync();
-                return Ok(todos);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var todos = await _todoService.GetAllTodosAsync();
+            return Ok(todos);
         }
 
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(Todo), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(SimpleResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateTodoAsync(int id, [FromBody] UpdateTodo request)
         {
-            try
+            var existingTodo = await _todoService.GetTodoByIdAsync(request.Id);
+            if (existingTodo == null)
             {
-                var existingTodo = await _todoService.GetTodoByIdAsync(request.Id);
-                if (existingTodo == null)
-                {
-                    return NotFound(new SimpleResponse()
-                    {
-                        StatusCode = StatusCodes.Status404NotFound,
-                        Message = $"Todo with id:{id} not found.",
-                        Success = false
-                    });
-                }
+                throw new KeyNotFoundException($"Todo with id:{id} not found.");
+            }
 
-                var result = _todoService.UpdateTodoAsync(request.Id, request);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var result = _todoService.UpdateTodoAsync(request.Id, request);
+            return Ok(result);
         }
 
         [HttpDelete("{id}")]
         [ProducesResponseType(typeof(SimpleResponse), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(SimpleResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ProblemResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteTodoAsync(int id)
         {
-            try
+            var result = await _todoService.DeleteTodoAsync(id);
+            if (!result)
             {
-                var result = await _todoService.DeleteTodoAsync(id);
-                if (result)
-                {
-                    return Ok(new SimpleResponse()
-                    {
-                        StatusCode = StatusCodes.Status200OK,
-                        Message = "Todo deleted successfully",
-                        Success = true
-                    });
-                }
-                return NotFound(new SimpleResponse()
-                {
-                    StatusCode = StatusCodes.Status404NotFound,
-                    Message = $"Todo with id:{id} not found.",
-                    Success = false
-                });
+                throw new KeyNotFoundException($"Todo with id:{id} not found.");
             }
-            catch (Exception ex)
+
+            return Ok(new SimpleResponse()
             {
-                return BadRequest(ex.Message);
-            }
+                StatusCode = StatusCodes.Status200OK,
+                Message = "Todo deleted successfully",
+                Success = true
+            });
+
         }
     }
 }
