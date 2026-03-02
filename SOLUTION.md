@@ -1,13 +1,11 @@
 # Solution Documentation
 
 **Candidate Name:** Kaustubh Sawant  
-**Completion Date:** [Date]
+**Completion Date:** 02-Mar-2026
 
 ---
 
 ## Problems Identified
-
-_Describe the issues you found in the original implementation. Consider aspects like:_
 
 - Architecture and design patterns
   
@@ -44,8 +42,6 @@ _Describe the issues you found in the original implementation. Consider aspects 
 ---
 
 ## Architectural Decisions
-
-_Explain the architecture you chose and why. Consider:_
 
 - Design patterns applied
 
@@ -95,8 +91,6 @@ _Explain the architecture you chose and why. Consider:_
 ---
 
 ## Trade-offs
-
-_Discuss compromises you made and the reasoning behind them. Consider:_
 
 - What did you prioritize?
   - Simplicity and layered application.
@@ -225,8 +219,6 @@ Response:
 ---
 
 ## Future Improvements
-
-_What would you do if you had more time? Consider:_
 
 - Use pagination while fetching all resources from the database.
 - Use ORM for data access / repository layer, preferably EntityFramweork with migration.
