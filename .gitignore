@@ -12,6 +12,10 @@
 [Rr]elease/
 x64/
 x86/
+obj/
 
 # NuGet Packages
 *.nupkg
+
+# DB files
+*.db

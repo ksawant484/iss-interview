@@ -1,6 +1,24 @@
 using Microsoft.Data.Sqlite;
+using Serilog;
+using TodoApi.DTOs.CommonDTOs;
+using TodoApi.Interfaces;
+using TodoApi.Middlewares.ExceptionMiddleware;
+using TodoApi.Repository;
+using TodoApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Serilog for logging
+string logPath = builder.Configuration["LogFilePath"] ?? "Logs/todoapi-.txt";
+
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.File(logPath, rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -8,11 +26,20 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Register the TodoService with the DI
+builder.Services.AddScoped<ITodoService, TodoService>();
+builder.Services.AddScoped<IRepository<Todo>, TodoRepository>();
+
 var app = builder.Build();
 
-InitializeDatabase();
+// Initialize the database
+await app.InitializeDatabaseAsync(app.Configuration);
 
 // Configure the HTTP request pipeline.
+
+// Use global exception handling middleware
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -27,23 +54,3 @@ app.MapControllers();
 
 app.Run();
 
-void InitializeDatabase()
-{
-    var connectionString = "Data Source=todos.db";
-    using var connection = new SqliteConnection(connectionString);
-    connection.Open();
-
-    var command = connection.CreateCommand();
-    command.CommandText = @"
-        CREATE TABLE IF NOT EXISTS Todos (
-            Id INTEGER PRIMARY KEY AUTOINCREMENT,
-            Title TEXT NOT NULL,
-            Description TEXT,
-            IsCompleted INTEGER NOT NULL DEFAULT 0,
-            CreatedAt TEXT NOT NULL
-        )
-    ";
-    command.ExecuteNonQuery();
-
-    Console.WriteLine("Database initialized successfully");
-}

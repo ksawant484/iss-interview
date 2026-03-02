@@ -1,122 +1,93 @@
 using Microsoft.AspNetCore.Mvc;
-using TodoApi.Models;
-using TodoApi.Services;
+using TodoApi.DTOs.CommonDTOs;
+using TodoApi.DTOs.RequestDTOs;
+using TodoApi.DTOs.ResponseDTOs;
+using TodoApi.Interfaces;
 
 namespace TodoApi.Controllers
 {
     [ApiController]
-    [Route("api")]
+    [Route("api/[controller]")]
     public class TodoController : ControllerBase
     {
-        public TodoController()
+
+        private readonly ITodoService _todoService;
+        private readonly ILogger<TodoController> _logger;
+
+        public TodoController(ITodoService todoService, ILogger<TodoController> logger)
         {
+            _todoService = todoService;
+            _logger = logger;
         }
 
-        [HttpPost("createTodo")]
-        public IActionResult CreateTodo([FromBody] Todo todo)
+        [HttpPost]
+        [ProducesResponseType(typeof(Todo), StatusCodes.Status200OK)]
+        public async Task<IActionResult> CreateTodoAsync([FromBody] CreateTodo todo)
         {
-            try
-            {
-                var todoService = new TodoService();
-                var result = todoService.CreateTodo(todo);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            _logger.LogInformation("API invoked to create a new todo having title:{Title}", todo.Title);
+
+            var result = await _todoService.CreateTodoAsync(todo);
+            return Ok(result);
         }
 
-        [HttpPost("getTodo")]
-        public IActionResult GetTodo([FromBody] GetTodoRequest request)
+        [HttpGet("{id}")]
+        [ProducesResponseType(typeof(Todo), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetTodoAsync(int id)
         {
-            try
-            {
-                var todoService = new TodoService();
-                if (request.Id.HasValue)
-                {
-                    var todo = todoService.GetTodoById(request.Id.Value);
-                    if (todo == null)
-                    {
-                        return NotFound();
-                    }
-                    return Ok(todo);
-                }
-                else
-                {
-                    var todos = todoService.GetAllTodos();
-                    return Ok(todos);
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            _logger.LogInformation("API invoked to fetch the todo having id:{Id}", id);
+
+            var todo = await _todoService.GetTodoByIdAsync(id);
+            return todo == null ?
+                throw new KeyNotFoundException($"Todo with id:{id} not found.")
+                : Ok(todo);
         }
 
-        [HttpPost("updateTodo")]
-        public IActionResult UpdateTodo([FromBody] UpdateTodoRequest request)
+        [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<Todo>), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetAllTodosAsync()
         {
-            try
-            {
-                var todoService = new TodoService();
-                var existingTodo = todoService.GetTodoById(request.Id);
-                if (existingTodo == null)
-                {
-                    return NotFound();
-                }
+            _logger.LogInformation("API invoked to fetch all todos");
 
-                var todo = new Todo
-                {
-                    Title = request.Title,
-                    Description = request.Description,
-                    IsCompleted = request.IsCompleted
-                };
-
-                var result = todoService.UpdateTodo(request.Id, todo);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var todos = await _todoService.GetAllTodosAsync();
+            return Ok(todos);
         }
 
-        [HttpPost("deleteTodo")]
-        public IActionResult DeleteTodo([FromBody] DeleteTodoRequest request)
+        [HttpPut("{id}")]
+        [ProducesResponseType(typeof(Todo), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> UpdateTodoAsync(int id, [FromBody] UpdateTodo request)
         {
-            try
+            _logger.LogInformation("API invoked to update the todo having id:{Id}", id);
+
+            var result = await _todoService.UpdateTodoAsync(id, request);
+            if (result == null)
             {
-                var todoService = new TodoService();
-                var result = todoService.DeleteTodo(request.Id);
-                if (result)
-                {
-                    return Ok(new { message = "Todo deleted successfully" });
-                }
-                return NotFound();
+                throw new KeyNotFoundException($"Todo with id:{id} not found.");
             }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return Ok(result);
         }
-    }
 
-    public class GetTodoRequest
-    {
-        public int? Id { get; set; }
-    }
+        [HttpDelete("{id}")]
+        [ProducesResponseType(typeof(SimpleResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ProblemResponse), StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteTodoAsync(int id)
+        {
+            _logger.LogInformation("API invoked to delete the todo having id:{Id}", id);
 
-    public class UpdateTodoRequest
-    {
-        public int Id { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public bool IsCompleted { get; set; }
-    }
+            var result = await _todoService.DeleteTodoAsync(id);
+            if (!result)
+            {
+                throw new KeyNotFoundException($"Todo with id:{id} not found.");
+            }
 
-    public class DeleteTodoRequest
-    {
-        public int Id { get; set; }
+            return Ok(new SimpleResponse()
+            {
+                StatusCode = StatusCodes.Status200OK,
+                Message = "Todo deleted successfully",
+                Success = true
+            });
+
+        }
     }
 }
